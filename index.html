@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microbiology Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            line-height: 1.5;
+        }
+        .option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .correct {
+            background-color: #d1fae5 !important;
+            border-color: #10b981 !important;
+            color: #065f46;
+        }
+        .incorrect {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #991b1b;
+        }
+        .selected {
+            background-color: #e0f2fe;
+            border-color: #38bdf8;
+        }
+        .question-nav-btn {
+            transition: all 0.2s ease-in-out;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        .question-nav-btn.active {
+            background-color: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+        .question-nav-btn.answered-correct {
+            background-color: #bfdbfe;
+            border-color: #60a5fa;
+            color: #1e40af;
+        }
+        .question-nav-btn.answered-incorrect {
+            background-color: #fecaca;
+            border-color: #f87171;
+            color: #991b1b;
+        }
+        .question-nav-btn:hover:not(.active) {
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen py-8">
+
+    <div id="quiz-container" class="quiz-container w-full">
+        
+        <div class="text-center mb-8 relative">
+            <h1 class="text-3xl font-bold text-gray-800">Microbiology & Bacteriology Exam</h1>
+            <p id="quiz-subtitle" class="text-gray-500 mt-2">Subject: VONG DANY</p>
+            <p class="text-gray-500">Lecturer: Bacterie</p>
+        </div>
+
+        <div class="text-center mb-6">
+            <div class="inline-flex rounded-md shadow-sm flex-wrap justify-center" role="group">
+                <button id="part1-btn" type="button" class="py-2 px-6 text-sm font-medium text-white bg-indigo-600 rounded-l-lg border border-gray-200 hover:bg-indigo-700 focus:z-10 focus:ring-2 focus:ring-indigo-500">Part 1</button>
+                <button id="part2-btn" type="button" class="py-2 px-6 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-indigo-500">Part 2</button>
+                <button id="part3-btn" type="button" class="py-2 px-6 text-sm font-medium text-gray-900 bg-white border border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-indigo-500">Part 3</button>
+                <button id="part4-btn" type="button" class="py-2 px-6 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-indigo-500">Part 4</button>
+                <button id="part5-btn" type="button" class="py-2 px-6 text-sm font-medium text-gray-900 bg-white border border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-indigo-500">Part 5</button>
+                <button id="part6-btn" type="button" class="py-2 px-6 text-sm font-medium text-gray-900 bg-white border border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-indigo-500">Part 6</button>
+                <button id="part7-btn" type="button" class="py-2 px-6 text-sm font-medium text-gray-900 bg-white rounded-r-md border border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-indigo-500">Part 7</button>
+            </div>
+        </div>
+
+        <div id="quiz-view">
+            <div class="flex justify-between items-center mb-4">
+                 <div id="main-score-text" class="text-lg font-bold text-indigo-600"></div>
+                 <button id="redo-part-btn" class="bg-orange-100 text-orange-700 font-semibold py-2 px-4 rounded-lg hover:bg-orange-200 text-sm">Redo Part</button>
+            </div>
+            <div id="question-navigation" class="flex flex-wrap justify-center gap-2 mb-6"></div>
+            <div id="question-area" class="mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 id="question-number" class="text-xl font-semibold text-gray-700"></h2>
+                </div>
+                <div id="question-text" class="text-lg text-gray-800 leading-relaxed"></div>
+            </div>
+            <div id="answer-area" class="grid grid-cols-1 md-grid-cols-2 gap-4"></div>
+            <div id="feedback-area" class="mt-6 text-center text-lg font-medium"></div>
+            <div class="mt-6 text-center">
+                <button id="redo-btn" class="hidden bg-yellow-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-yellow-600 transition-colors duration-300 shadow-lg">Redo Question</button>
+            </div>
+            <div class="mt-4 flex justify-between items-center">
+                <button id="prev-btn" class="bg-gray-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-gray-600 transition-colors duration-300 shadow-lg hidden"><span>&larr; Previous</span></button>
+                <button id="next-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-indigo-700 transition-colors duration-300 shadow-lg hidden ml-auto"><span>Next Question</span></button>
+            </div>
+            <div id="results-area" class="hidden text-center">
+                <div class="mb-4"><h2 class="text-4xl font-extrabold text-gray-800">Part Complete!</h2></div>
+                <p id="results-score" class="text-2xl text-gray-600 mb-6"></p>
+                <div id="summary" class="text-left mt-8 bg-gray-50 p-6 rounded-lg max-h-96 overflow-y-auto">
+                    <div class="text-center"><h3 class="text-xl font-bold text-gray-700">Review Your Answers:</h3></div>
+                </div>
+                <button id="restart-btn" class="mt-8 bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-indigo-700 transition-colors duration-300 shadow-lg"><span>Play Again</span></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Question Data (91 Questions Distributed across Parts 1-4) ---
+        let quizDataPart1 = [
+            { number: 1, type: 'mcq', question: { en: "Which of the following is not a genus of Enterobactericeae?" }, options: { en: ["A. Shigella spp", "B. Salmonella spp", "C. Serratia spp", "D. Staphylococcus spp"] }, answer: { en: "D. Staphylococcus spp" } },
+            { number: 2, type: 'mcq', question: { en: "Which of the following is a primary defining characteristic of all members of the familly Enterobacteriaceae?" }, options: { en: ["A. They are all Gram-positive cocci", "B. They are all obligate anaerobes", "C. They are all Oxidase negative", "D. They all ferment lactose"] }, answer: { en: "C. They are all Oxidase negative" } },
+            { number: 3, type: 'mcq', question: { en: "All members of Enterobacteriaceae share which of the following features?" }, options: { en: ["A. Ability to reduce nitrates to nitrites.", "B. Present of peritrichous flagella in all species.", "C. Ptoduction of cytochrome oxiodase.", "D. Formation of endospores."] }, answer: { en: "A. Ability to reduce nitrates to nitrites." } },
+            { number: 4, type: 'mcq', question: { en: "Which of the following Enterobacteriaceae is strictly a human pathogen (no animal reservoir) and is non motile?" }, options: { en: ["A. Salmonella typhi", "B. Yersinia enterocolitica", "C. Shigella dysenteriae", "D. Escherichia coli O157:H7"] }, answer: { en: "C. Shigella dysenteriae" } },
+            { number: 5, type: 'mcq', question: { en: "All these species are in familly Enterobactericeae, except:" }, options: { en: ["A. Citrobacter", "B. Enterobacter", "C. Enterococcus", "D. Escherichia"] }, answer: { en: "C. Enterococcus" } },
+            { number: 6, type: 'mcq', question: { en: "Which of the following bacteria is a genus of Enterobactericeae?" }, options: { en: ["A. Klebsiella", "B. Enterococcus", "C. Neisseria", "D. Mycoplasma"] }, answer: { en: "A. Klebsiella" } },
+            { number: 7, type: 'mcq', question: { en: "True about Enterobactericeae is all, except:" }, options: { en: ["A. Normal or pathological bacteria of digestive tract", "B. Some group proliferate in environmental", "C. Some species are opportunistic pathogens", "D. Some are commensal on skin"] }, answer: { en: "D. Some are commensal on skin" } },
+            { number: 8, type: 'mcq', question: { en: "Which of the following bacteria is not a most common bacterial pathogen causing diarrhea?" }, options: { en: ["A. Shigella spp", "B. Salmonella spp", "C. Staphylococcus aureus", "D. Campylobacter"] }, answer: { en: "C. Staphylococcus aureus" } },
+            { number: 9, type: 'mcq', question: { en: "Which of the following bacteria is rarely associated with Urinary Tract Infection?" }, options: { en: ["A. E.coli", "B. Enterobacter spp", "C. Proteus spp", "D. Shigella spp"] }, answer: { en: "D. Shigella spp" } },
+            { number: 10, type: 'mcq', question: { en: "Which of the following Gram negative rod is not a blood borne bacterial pathogen?" }, options: { en: ["A. Shigella spp", "B. Escherichia Coli", "C. Klebsiella pneumoniae", "D. Pseudomonas aeruginosa"] }, answer: { en: "A. Shigella spp" } },
+            { number: 11, type: 'mcq', question: { en: "Stool Culture is primarily recommended when the complaint is:" }, options: { en: ["A. Bloody diarrhea(dysentery, enterocolitis)", "B. Watery diarrhea", "C. For both bloody and watery diarrhea", "D. An indication of anaerobic infection"] }, answer: { en: "A. Bloody diarrhea(dysentery, enterocolitis)" } },
+            { number: 12, type: 'mcq', question: { en: "Which of the following are reservoirs for humans infection?" }, options: { en: ["A. Food and water", "B. humans", "C. animals", "D. all of the above"] }, answer: { en: "D. all of the above" } },
+            { number: 13, type: 'mcq', question: { en: "Enterobactericeae has respirotory type:" }, options: { en: ["A. Aerobic strict", "B. Aeroanaerobic facultatif", "C. Anaerobic strict", "D. Microaerophilic"] }, answer: { en: "B. Aeroanaerobic facultatif" } },
+            { number: 14, type: 'mcq', question: { en: "The vast majority of Enterobactericeae have Flagellar:" }, options: { en: ["A. Peritrichous", "B. monotrichous", "C. amphitrichous", "D. lophotrichous"] }, answer: { en: "A. Peritrichous" } },
+            { number: 15, type: 'mcq', question: { en: "Which of the following bacteria is immotile(no flagellar)?" }, options: { en: ["A. Klebsiella", "B. Salmonella typhy", "C. Vibrio cholerae", "D. Escherichia"] }, answer: { en: "A. Klebsiella" } },
+            { number: 16, type: 'mcq', question: { en: "The optimum growth temperature of Enterobactericea is:" }, options: { en: ["A. 25 °C", "B. 30 °C", "C. 37 °C", "D. 40 °C"] }, answer: { en: "C. 37 °C" } },
+            { number: 17, type: 'mcq', question: { en: "Enterobactericeae growth on ordinary media after:" }, options: { en: ["A. 18-24 hours", "B. 37 hours", "C. 48 hours", "D. 72 hours"] }, answer: { en: "A. 18-24 hours" } },
+            { number: 18, type: 'mcq', question: { en: "Which of the following is not a general caracteristic of Enterobactericeae?" }, options: { en: ["A. Gram negative bacilli", "B. Oxydase positive", "C. fermenter glucose", "D. Aero-anaerobic facultative"] }, answer: { en: "B. Oxydase positive" } },
+            { number: 19, type: 'mcq', question: { en: "All are true about species of Salmonella, except:" }, options: { en: ["A. Salmonella typhi", "B. Salmonella enteritidis", "C. Salmonella cholerae-suis", "D. Salmonella dysenteriae"] }, answer: { en: "D. Salmonella dysenteriae" } },
+            { number: 20, type: 'mcq', question: { en: "Not true of Salmonella is that:" }, options: { en: ["A. It is included in the family Enterobactericeae", "B. Oxidase negative", "C. Catalase positive", "D. Strict anaerobic"] }, answer: { en: "D. Strict anaerobic" } },
+            { number: 21, type: 'mcq', question: { en: "Major antigens possess by Salmonella:" }, options: { en: ["A. Antigen O", "B. Antigen H", "C. Antigen Vi", "D. All of the above"] }, answer: { en: "D. All of the above" } },
+            { number: 22, type: 'mcq', question: { en: "The caracteristic of Salmonella:" }, options: { en: ["A. Motile", "B. Fermenting lactose", "C. Produce H2S", "D. all of the above"] }, answer: { en: "C. Produce H2S" } },
+            { number: 23, type: 'mcq', question: { en: "True about the caracteristic of Shigella, is all, except:" }, options: { en: ["A. Gram negative bacilli", "B. Non motile", "C. fermenter lactose", "D. Fermenter glucose with production of acid but not gas"] }, answer: { en: "C. fermenter lactose" } },
+            { number: 24, type: 'mcq', question: { en: "Which of the following is not a symptom cause by Shigella?" }, options: { en: ["A. Meningitis", "B. abdominal pain", "C. diarrhea", "D. Nausea and vomiting"] }, answer: { en: "A. Meningitis" } },
+            { number: 25, type: 'mcq', question: { en: "Which of the following is not a type of specimen for Shigella?" }, options: { en: ["A. anal swab", "B. urine", "C. stool", "D. rectal swab"] }, answer: { en: "B. urine" } }
+        ];
+
+        let quizDataPart2 = [
+            { number: 1, type: 'mcq', question: { en: "True about the important part of specimen stool that we should steak or collect for culture Shigella, is all, except:" }, options: { en: ["A. Blood", "B. mucus", "C. food excremen", "D. pus"] }, answer: { en: "C. food excremen" } },
+            { number: 2, type: 'mcq', question: { en: "Which of the following is a stool transport medium?" }, options: { en: ["A. Cary-blair", "B. Mueller hinton", "C. Blood agar", "D. chorcolate agar"] }, answer: { en: "A. Cary-blair" } },
+            { number: 3, type: 'mcq', question: { en: "In stool culture, the hight selective media for Shigella spp is:" }, options: { en: ["A. MacConkey agar", "B. SS agar", "C. Xylose lysine desoxycholate agar", "D. Eosin methylene blue"] }, answer: { en: "C. Xylose lysine desoxycholate agar" } },
+            { number: 4, type: 'mcq', question: { en: "In stool culture, the moderately selective media for Shigella spp is:" }, options: { en: ["A. MacConkey agar", "B. SS agar", "C. Xylose lysine desoxycholate agar", "D. Eosin methylene blue"] }, answer: { en: "B. SS agar" } },
+            { number: 5, type: 'mcq', question: { en: "In stool culture, the low selective media for Shigella spp is:" }, options: { en: ["A. MacConkey agar", "B. SS agar", "C. Xylose lysine desoxycholate agar", "D. Hektoen enteric agar"] }, answer: { en: "A. MacConkey agar" } },
+            { number: 6, type: 'mcq', question: { en: "In stool culture, Which of the following is not a selective media for Shigella spp?" }, options: { en: ["A. MacConkey agar", "B. SS agar", "C. Xylose lysine desoxycholate agar", "D. Chapman agar"] }, answer: { en: "D. Chapman agar" } },
+            { number: 7, type: 'mcq', question: { en: "Citrobacter that we frequently isolated:" }, options: { en: ["A. Citrobacter amalonaticus", "B. Citrobacter symbols", "C. Citrobacter freundii", "D. all of the above"] }, answer: { en: "D. all of the above" } },
+            { number: 8, type: 'mcq', question: { en: "Pathogenecity and habitat of Citrobacter:" }, options: { en: ["A. Saprophytic bacteria", "B. nosocomial infection", "C. opportunistic pathogen and urinary tract infection", "D. all of the above"] }, answer: { en: "D. all of the above" } },
+            { number: 9, type: 'mcq', question: { en: "Which of the following is not caracteristic of Klebsiella?" }, options: { en: ["A. Gram positive bacilli", "B. Capsulated", "C. Colonies mucus", "D. Immotile"] }, answer: { en: "A. Gram positive bacilli" } },
+            { number: 10, type: 'mcq', question: { en: "Rhinoscleroma is frequently caused by which one of the following bacteria?" }, options: { en: ["A. Klebsiella pneumoniae", "B. Klebsiella oxytoca", "C. Klebsiella rhinoscleromatis", "D. Klebsiella ozaenae"] }, answer: { en: "C. Klebsiella rhinoscleromatis" } },
+            { number: 11, type: 'mcq', question: { en: "Pathogenecity and habitat of Enterobacter:" }, options: { en: ["A. Commensal gut", "B. Urinary tract infection", "C. Bacteremia", "D. all of the above"] }, answer: { en: "D. all of the above" } },
+            { number: 12, type: 'mcq', question: { en: "All are true about Proteus, except:" }, options: { en: ["A. Coloni invasion of Media", "B. Grampositive bacilli", "C. Resistance to colistine", "D. Peritrichous flagella"] }, answer: { en: "B. Grampositive bacilli" } },
+            { number: 13, type: 'mcq', question: { en: "Which biochemiccal test is specially used to differentiate proteus species from other Enterobacteriaceae base on their ability to hydrolyze urea?" }, options: { en: ["A. Citrate test", "B. Indole test", "C. Urease test", "D. Voges-proskauer test"] }, answer: { en: "C. Urease test" } },
+            { number: 14, type: 'mcq', question: { en: "A \" swarming\" pattern of growth on blood agar is a characteristic diagnostic feature of which genus?" }, options: { en: ["A. Salmonella", "B. Proteus", "C. Klebsiella", "D. Shigella"] }, answer: { en: "B. Proteus" } },
+            { number: 15, type: 'mcq', question: { en: "Which of the following is not caracteristic of Yersinia?" }, options: { en: ["A. Gram negative bacilli", "B. Capsulated", "C. not sporulated", "D. None motile at 37°C"] }, answer: { en: "B. Capsulated" } },
+            { number: 16, type: 'mcq', question: { en: "Which of the following is caracteristic of Yersinia?" }, options: { en: ["A. some time coccobacilli", "B. Capsulated", "C. Sporulated", "D. motile at 37°C"] }, answer: { en: "A. some time coccobacilli" } },
+            { number: 17, type: 'mcq', question: { en: "Yersinia are attached to Enterobacteriaceae with:" }, options: { en: ["A. Oxydase negative", "B. Catalase positive", "C. Glucose fermenter", "D. all of the above"] }, answer: { en: "D. all of the above" } },
+            { number: 18, type: 'mcq', question: { en: "Yersinia are generated with three main pathogens:" }, options: { en: ["A. Yersinia pestis", "B. Yersinia enterocolitica", "C. Yersinia pseudotuberculosis", "D. all of the above"] }, answer: { en: "D. all of the above" } },
+            { number: 19, type: 'mcq', question: { en: "Yersinia pestisare responsible for:" }, options: { en: ["A. enterocolitis", "B. Plague", "C. adenolymphite", "D. mesenteric septicemic faorm"] }, answer: { en: "B. Plague" } },
+            { number: 20, type: 'mcq', question: { en: "Campylobacter jejuni resist to:" }, options: { en: ["A. desiccation", "B. freezing", "C. cold 0-10°C", "D. salt"] }, answer: { en: "C. cold 0-10°C" } },
+            { number: 21, type: 'mcq', question: { en: "Campylobacter jejuni very sentitive to:" }, options: { en: ["A. desiccation", "B. freezing", "C. salt", "D. all of the above"] }, answer: { en: "D. all of the above" } },
+            { number: 22, type: 'mcq', question: { en: "Yersinia is naturally resistant to:" }, options: { en: ["A. streptogramineB", "B. erythromycin", "C. ofloxacin", "D. ciprofloxacin"] }, answer: { en: "A. streptogramineB" } },
+            { number: 23, type: 'mcq', question: { en: "Which of the following is not a caracteristic of Vibrio?" }, options: { en: ["A. Gram negative bacilli in curve", "B. Immotile", "C. Oxydase positive", "D. aero-anaerobic"] }, answer: { en: "B. Immotile" } },
+            { number: 24, type: 'mcq', question: { en: "Which of the following is a specific media for Vibrio?" }, options: { en: ["A. Chapman", "B. Sabouraud chloramphenicol", "C. TCBS", "D. Skirrow"] }, answer: { en: "C. TCBS" } },
+            { number: 25, type: 'mcq', question: { en: "Vibriois very motile with ciliature:" }, options: { en: ["A. monotrichous", "B. amphitrichous", "C. lophotrichous", "D. Peritrichous"] }, answer: { en: "A. monotrichous" } }
+        ];
+
+        let quizDataPart3 = [
+            { number: 1, type: 'mcq', question: { en: "Which of the following is not a species in family Pseudomonasceae?" }, options: { en: ["A. Pseudomonas", "B. Citrobacter", "C. Acinetobacter", "D. Burkholderia"] }, answer: { en: "B. Citrobacter" } },
+            { number: 2, type: 'mcq', question: { en: "True about common caracteristic of Pseudomonasceae, is all, except:" }, options: { en: ["A. Gram negative bacilli", "B. aerobic strict", "C. fermenter glucose", "D. Oxydase positive"] }, answer: { en: "C. fermenter glucose" } },
+            { number: 3, type: 'mcq', question: { en: "Which of the following is a common caracteristic of Pseudomonasceae?" }, options: { en: ["A. Gram positive bacilli", "B. aero-anaerobic falcultative", "C. fermenter glucose", "D. none of these"] }, answer: { en: "D. none of these" } },
+            { number: 4, type: 'mcq', question: { en: "Optimum temperature for culture Pseudomonasceae is:" }, options: { en: ["A. 2-8°C", "B. 25°C", "C. 37°C", "D. 41°C"] }, answer: { en: "C. 37°C" } },
+            { number: 5, type: 'mcq', question: { en: "Pseudomonasceaeresponsible for opportunistic pathogen in immunocompromised patients:" }, options: { en: ["A. Cancer", "B. Burns", "C. Dialysis", "D. all of the above"] }, answer: { en: "D. all of the above" } },
+            { number: 6, type: 'mcq', question: { en: "True about common caracterisric of Haemophilus, is all, except:" }, options: { en: ["A. Gram negative coccobacilli", "B. Capsulated", "C. Incubated in 10% CO2", "D. Easy grow in usual media"] }, answer: { en: "D. Easy grow in usual media" } },
+            { number: 7, type: 'mcq', question: { en: "Which of the following media that contain both factor X and V that is required by Haemophilus?" }, options: { en: ["A. Blood agar", "B. Chocolate agar", "C. Mueller Hinton", "D. Trypticase soy agar"] }, answer: { en: "B. Chocolate agar" } },
+            { number: 8, type: 'mcq', question: { en: "Haemophilus influenzaresponsible for infection:" }, options: { en: ["A. Meningitis", "B. diarrhea", "C. Urinary trat infection", "D. digestive infection"] }, answer: { en: "A. Meningitis" } },
+            { number: 9, type: 'mcq', question: { en: "The most common cause of meningitis in children aged 6months-2years is H.influenza serotype:" }, options: { en: ["A. a", "B. b", "C. c", "D. d"] }, answer: { en: "B. b" } },
+            { number: 10, type: 'mcq', question: { en: "Transmission of Haemophilus influenzais from:" }, options: { en: ["A. Human to Human", "B. Animal to animal", "C. Human to animal", "D. insect to human"] }, answer: { en: "A. Human to Human" } },
+            { number: 11, type: 'mcq', question: { en: "Which of the following is a specie in family Pseudomonasceae?" }, options: { en: ["A. Campylobacter", "B. Citrobacter", "C. Acinetobacter", "D. Enterobacter"] }, answer: { en: "C. Acinetobacter" } },
+            { number: 12, type: 'mcq', question: { en: "Habitat of Pseudomonasceae:" }, options: { en: ["A. Soil", "B. Water", "C. Plant", "D. dust", "E. all of the above"] }, answer: { en: "E. all of the above" } },
+            { number: 13, type: 'mcq', question: { en: "Pseudomonas aeruginosa is motile with ciliature:" }, options: { en: ["A. monotrichous", "B. amphitrichous", "C. lophotrichous", "D. Peritrichous"] }, answer: { en: "A. monotrichous" } },
+            { number: 14, type: 'mcq', question: { en: "Pseudomonascea is easy growth on:" }, options: { en: ["A. Specific media", "B. ordinary media", "C. selective media", "D. chromogen media"] }, answer: { en: "B. ordinary media" } },
+            { number: 15, type: 'mcq', question: { en: "Which of the following Gram negative rods does not ferment glucose and is oxydase positive?" }, options: { en: ["A. E.coli", "B. P.vulgaris", "C. P.aeruginosa", "D. Salmonella"] }, answer: { en: "C. P.aeruginosa" } },
+            { number: 16, type: 'mcq', question: { en: "Escherichia coli that cause Shigella-like diarrhea:" }, options: { en: ["A. Enterotoxigenic (ETEC)", "B. Enteroinvasive(EIEC)", "C. Enteropathogenic(EPEC)", "D. Enterohemorrhagic(EHEC)"] }, answer: { en: "B. Enteroinvasive(EIEC)" } },
+            { number: 17, type: 'mcq', question: { en: "Escherichia coli that cause Infantile diarrhea Salmonella-like with fever:" }, options: { en: ["A. Enterotoxigenic (ETEC)", "B. Enteroinvasive(EIEC)", "C. Enteropathogenic(EPEC)", "D. Enterohemorrhagic(EHEC)"] }, answer: { en: "C. Enteropathogenic(EPEC)" } },
+            { number: 18, type: 'mcq', question: { en: "Escherichia coli that cause Traveller's diarrhea:" }, options: { en: ["A. Enterotoxigenic (ETEC)", "B. Enteroinvasive(EIEC)", "C. Enteropathogenic(EPEC)", "D. Enterohemorrhagic(EHEC)"] }, answer: { en: "A. Enterotoxigenic (ETEC)" } },
+            { number: 19, type: 'mcq', question: { en: "Escherichia coli that cause Hemorrhagic colitis:" }, options: { en: ["A. Enterotoxigenic (ETEC)", "B. Enteroinvasive(EIEC)", "C. Enteropathogenic(EPEC)", "D. Enterohemorrhagic(EHEC)"] }, answer: { en: "D. Enterohemorrhagic(EHEC)" } },
+            { number: 20, type: 'mcq', question: { en: "Disease that affects many people at different countries is termed as:" }, options: { en: ["A. Sporadic", "B. Pandemic", "C. Epidemic", "D. endemic"] }, answer: { en: "B. Pandemic" } },
+            { number: 21, type: 'mcq', question: { en: "If the vectors transmit the infection machanically they are called:" }, options: { en: ["A. biological vectors", "B. Mechanical vectors", "C. Biological Reservoir", "D. Both a and c"] }, answer: { en: "B. Mechanical vectors" } },
+            { number: 22, type: 'mcq', question: { en: "If a person can be infected by direct contact with infected tissue of another person, it is termed as:" }, options: { en: ["A. Indirect contact transmission", "B. Attachment", "C. Direct contact transmission", "D. None of these"] }, answer: { en: "C. Direct contact transmission" } },
+            { number: 23, type: 'mcq', question: { en: "The most important virulence factors are:" }, options: { en: ["A. Adhesions", "B. Invasiveness", "C. Toxigenicity and enzymes", "D. All of the above"] }, answer: { en: "D. All of the above" } },
+            { number: 24, type: 'mcq', question: { en: "The ability of pathogen to spread in the host tissues after establishing the infection is known as:" }, options: { en: ["A. Adhesions", "B. Invasiveness", "C. Toxigenicity", "D. None of these"] }, answer: { en: "B. Invasiveness" } },
+            { number: 25, type: 'mcq', question: { en: "Which is the following enzyme acts as a spreading factor?" }, options: { en: ["A. Hyaluronidase", "B. Coagulase", "C. Catalase", "D. Dnase"] }, answer: { en: "A. Hyaluronidase" } }
+        ];
+
+        let quizDataPart4 = [
+            { number: 1, type: 'mcq', question: { en: "Septicaemia is:" }, options: { en: ["A. Bacteria in blood", "B. Toxin in blood", "C. Pus in blood", "D. Multiplication of bacteria and toxins in blood"] }, answer: { en: "D. Multiplication of bacteria and toxins in blood" } },
+            { number: 2, type: 'mcq', question: { en: "Name the type of diarrhea caused by V.cholerae?" }, options: { en: ["A. Acute watery diarrhea with blood", "B. Acute watery diarrhea resembling rice water", "C. Mild watery diarrhea with no blood", "D. Acute watery diarrhea with no blood"] }, answer: { en: "B. Acute watery diarrhea resembling rice water" } },
+            { number: 3, type: 'mcq', question: { en: "Campylobacter jejuni is a microaerophilic bacteria, which of the statement is true for the culture of this bacteria?" }, options: { en: ["A. An atmosphere of increase O2(10%) with added CO2(5%)", "B. An atmosphere of reduced O2(5%) with added CO2(10%)", "C. An atmosphere of reduces CO2(5%) with added CO2(10%)", "D. An atmosphere of increase CO2(10%) with added O2(5%)"] }, answer: { en: "B. An atmosphere of reduced O2(5%) with added CO2(10%)" } },
+            { number: 4, type: 'mcq', question: { en: "Helicobacter pylori is associated with all of the following, Except?" }, options: { en: ["A. Malt lymphoma", "B. Gastric Carcinoma", "C. Peptic ulcer", "D. Burkitt lymphoma"] }, answer: { en: "D. Burkitt lymphoma" } },
+            { number: 5, type: 'mcq', question: { en: "Which one of the following virulence factors may be associated with the pathogenesis of infection caused by H.pylori?" }, options: { en: ["A. Flagella", "B. Lipopolysaccharides", "C. Exotoxins", "D. Endotoxins"] }, answer: { en: "A. Flagella" } },
+            { number: 6, type: 'mcq', question: { en: "Which one of these is not the common laboratory tests for the identification of Helicobacter pylori?" }, options: { en: ["A. Biopsy test", "B. Urease breath test", "C. Stool antigen test", "D. Urine test"] }, answer: { en: "D. Urine test" } },
+            { number: 7, type: 'mcq', question: { en: "Morphology of Helicobacter pylori is a gram negative bacilli in:" }, options: { en: ["A. Curve", "B. Spiral", "C. Bipolar", "D. Coccobacilli"] }, answer: { en: "B. Spiral" } },
+            { number: 8, type: 'mcq', question: { en: "Morphology of Vibrio cholorea is a gram negative bacilli in:" }, options: { en: ["A. Curve", "B. Spiral", "C. Bipolar", "D. Coccobacilli"] }, answer: { en: "A. Curve" } },
+            { number: 9, type: 'mcq', question: { en: "Morphology of Escherichia coli is a gram negative bacilli with:" }, options: { en: ["A. Curve", "B. Spiral", "C. Bipolar", "D. Coccobacilli"] }, answer: { en: "D. Coccobacilli" } },
+            { number: 10, type: 'mcq', question: { en: "Morphology of Haemophilus influenzea is a gram negative:" }, options: { en: ["A. Curve", "B. Spiral", "C. Bipolar", "D. Coccobacilli"] }, answer: { en: "D. Coccobacilli" } },
+            { number: 11, type: 'mcq', question: { en: "One of the following is a colony morphology of Proteus sp:" }, options: { en: ["A. Swarming", "B. Mucus", "C. Tiny", "D. Round 2-3mm"] }, answer: { en: "A. Swarming" } },
+            { number: 12, type: 'mcq', question: { en: "One of the following is a colony morphology of E.coli:" }, options: { en: ["A. Swarming", "B. Mucus", "C. Tiny", "D. Round 2-3mm"] }, answer: { en: "D. Round 2-3mm" } },
+            { number: 13, type: 'mcq', question: { en: "One of the following is a colony morphology of Haemophilus sp:" }, options: { en: ["A. Swarming", "B. Mucus", "C. Tiny", "D. Round 2-3mm"] }, answer: { en: "C. Tiny" } },
+            { number: 14, type: 'mcq', question: { en: "One of the following is a colony morphology of Klebsiella sp:" }, options: { en: ["A. Swarming", "B. Mucus", "C. Tiny", "D. Round 2-3mm"] }, answer: { en: "B. Mucus" } },
+            { number: 15, type: 'mcq', question: { en: "All of the following bacteria is motile positive except:" }, options: { en: ["A. E.coli", "B. Shigella", "C. Shamonella", "D. Citrobacter"] }, answer: { en: "B. Shigella" } },
+            { number: 16, type: 'mcq', question: { en: "Which organism is the most common cause of uncomplicated urinary tract infection (UTIs) in humans?" }, options: { en: ["A. Enterobacter cloacae", "B. Escherichia Coli", "C. Serratia marcescens", "D. Klebsiella pneumoniae"] }, answer: { en: "B. Escherichia Coli" } }
+        ];
+
+        let quizDataPart5 = [];
+        let quizDataPart6 = [];
+        let quizDataPart7 = [];
+
+        // --- Logic Variables ---
+        let quizData;
+        let currentPart = 1;
+        let quizState = {};
+        const correctSynth = new Tone.Synth().toDestination();
+        const incorrectSynth = new Tone.Synth().toDestination();
+        let audioStarted = false;
+        let isAnswered = false;
+
+        // --- DOM Cache ---
+        const part1Btn = document.getElementById('part1-btn');
+        const part2Btn = document.getElementById('part2-btn');
+        const part3Btn = document.getElementById('part3-btn');
+        const part4Btn = document.getElementById('part4-btn');
+        const part5Btn = document.getElementById('part5-btn');
+        const part6Btn = document.getElementById('part6-btn');
+        const part7Btn = document.getElementById('part7-btn');
+        const quizView = document.getElementById('quiz-view');
+        const mainScoreTextEl = document.getElementById('main-score-text');
+        const questionNavArea = document.getElementById('question-navigation');
+        const questionArea = document.getElementById('question-area');
+        const questionNumberEl = document.getElementById('question-number');
+        const questionTextEl = document.getElementById('question-text');
+        const answerArea = document.getElementById('answer-area');
+        const feedbackArea = document.getElementById('feedback-area');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const redoBtn = document.getElementById('redo-btn');
+        const redoPartBtn = document.getElementById('redo-part-btn');
+        const resultsArea = document.getElementById('results-area');
+        const resultsScoreEl = document.getElementById('results-score');
+        const summaryEl = document.getElementById('summary');
+        const restartBtn = document.getElementById('restart-btn');
+
+        async function startAudio() {
+            if (!audioStarted) { await Tone.start(); audioStarted = true; }
+        }
+        
+        function switchPart(part) {
+            currentPart = part;
+            [part1Btn, part2Btn, part3Btn, part4Btn, part5Btn, part6Btn, part7Btn].forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-900');
+            });
+            
+            let targetBtn;
+            if (part === 1) { quizData = quizDataPart1; targetBtn = part1Btn; }
+            else if (part === 2){ quizData = quizDataPart2; targetBtn = part2Btn; }
+            else if (part === 3){ quizData = quizDataPart3; targetBtn = part3Btn; }
+            else if (part === 4){ quizData = quizDataPart4; targetBtn = part4Btn; }
+            else if (part === 5){ quizData = quizDataPart5; targetBtn = part5Btn; }
+            else if (part === 6){ quizData = quizDataPart6; targetBtn = part6Btn; }
+            else { quizData = quizDataPart7; targetBtn = part7Btn; }
+            
+            targetBtn.classList.add('bg-indigo-600', 'text-white');
+            targetBtn.classList.remove('bg-white', 'text-gray-900');
+            document.getElementById('quiz-subtitle').textContent = `Subject: Bacteriology (${quizData.length} questions)`;
+            
+            if(!quizState[currentPart]) quizState[currentPart] = { userAnswers: [], score: 0, currentQuestionIndex: 0 };
+            
+            loadQuizView();
+        }
+
+        function updateScoreText() {
+            mainScoreTextEl.innerHTML = `Score: ${quizState[currentPart].score} / ${quizData.length}`;
+        }
+
+        function initializeQuiz() {
+            quizState = { 
+                1: { userAnswers: [], score: 0, currentQuestionIndex: 0 }, 
+                2: { userAnswers: [], score: 0, currentQuestionIndex: 0 }, 
+                3: { userAnswers: [], score: 0, currentQuestionIndex: 0 }, 
+                4: { userAnswers: [], score: 0, currentQuestionIndex: 0 }, 
+                5: { userAnswers: [], score: 0, currentQuestionIndex: 0 }, 
+                6: { userAnswers: [], score: 0, currentQuestionIndex: 0 }, 
+                7: { userAnswers: [], score: 0, currentQuestionIndex: 0 } 
+            };
+            switchPart(currentPart || 1); 
+        }
+        
+        function loadQuizView() {
+            quizView.classList.remove('hidden');
+            resultsArea.classList.add('hidden');
+            [questionNavArea, questionArea, answerArea].forEach(el => el.classList.remove('hidden'));
+            renderQuestionButtons();
+            showQuestion();
+            updateScoreText();
+        }
+
+        function renderQuestionButtons() {
+            questionNavArea.innerHTML = '';
+            quizData.forEach((question, index) => {
+                const button = document.createElement('button');
+                button.textContent = question.number;
+                button.classList.add('question-nav-btn', 'border-2', 'border-gray-300', 'rounded-md');
+                button.addEventListener('click', () => { quizState[currentPart].currentQuestionIndex = index; showQuestion(); });
+                questionNavArea.appendChild(button);
+            });
+        }
+        
+        function updateQuestionButtonStyles() {
+            const buttons = Array.from(questionNavArea.children);
+            buttons.forEach((button, index) => {
+                button.classList.remove('active', 'answered-correct', 'answered-incorrect');
+                if (quizState[currentPart].userAnswers[index]) {
+                    button.classList.add(quizState[currentPart].userAnswers[index].isCorrect ? 'answered-correct' : 'answered-incorrect');
+                }
+            });
+            const currentQuestionIndex = quizState[currentPart].currentQuestionIndex;
+            if(buttons[currentQuestionIndex]) buttons[currentQuestionIndex].classList.add('active');
+        }
+
+        function showQuestion() {
+            resetState();
+            if (quizData.length === 0) {
+                questionTextEl.innerHTML = "No questions in this part.";
+                questionNumberEl.innerHTML = `Question 0/0`;
+                return;
+            }
+            const idx = quizState[currentPart].currentQuestionIndex;
+            const currentQuestion = quizData[idx];
+            const userAnswers = quizState[currentPart].userAnswers;
+            isAnswered = userAnswers[idx] !== undefined;
+
+            if (isAnswered) redoBtn.classList.remove('hidden');
+            questionNumberEl.innerHTML = `Question ${currentQuestion.number}/${quizData.length}`;
+            questionTextEl.innerHTML = `${currentQuestion.question.en}`;
+            
+            if (currentQuestion.type === 'mcq') {
+                answerArea.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+                currentQuestion.options.en.forEach((opt) => {
+                    const button = document.createElement('button');
+                    button.innerHTML = `<span>${opt}</span>`;
+                    button.className = 'option-btn w-full p-4 border-2 border-gray-300 rounded-lg text-left hover:bg-gray-100';
+                    button.addEventListener('click', () => selectAnswer(button, opt, idx, answerArea, feedbackArea));
+                    if(isAnswered) {
+                        button.disabled = true;
+                        if (opt.trim() === currentQuestion.answer.en.trim()) button.classList.add('correct');
+                        if (opt.trim() === userAnswers[idx].answer.trim() && !userAnswers[idx].isCorrect) button.classList.add('incorrect');
+                    }
+                    answerArea.appendChild(button);
+                });
+            }
+            updateQuestionButtonStyles();
+            updateButtonVisibility();
+        }
+        
+        function resetState() { feedbackArea.textContent = ''; answerArea.innerHTML = ''; redoBtn.classList.add('hidden'); }
+
+        function updateButtonVisibility() {
+            const idx = quizState[currentPart].currentQuestionIndex;
+            prevBtn.classList.toggle('hidden', idx === 0);
+            const allDone = quizState[currentPart].userAnswers.filter(Boolean).length === quizData.length;
+            nextBtn.classList.toggle('hidden', allDone && idx === quizData.length - 1);
+            nextBtn.innerHTML = (idx === quizData.length - 1 || allDone) ? "Show Results" : "Next Question";
+        }
+
+        async function selectAnswer(button, opt, idx, container, feedbackEl) {
+            await startAudio();
+            if (quizState[currentPart].userAnswers[idx]) return;
+            const allButtons = container.querySelectorAll('button');
+            allButtons.forEach(btn => btn.disabled = true);
+            const q = quizData[idx];
+            const isCorrect = opt.trim() === q.answer.en.trim();
+            if (isCorrect) {
+                quizState[currentPart].score++;
+                correctSynth.triggerAttackRelease("C5", "8n");
+                button.classList.add('correct');
+                feedbackEl.innerHTML = `Correct!`;
+                feedbackEl.className = 'mt-2 text-center text-md font-medium text-green-600';
+            } else {
+                incorrectSynth.triggerAttackRelease("G3", "16n", Tone.now());
+                incorrectSynth.triggerAttackRelease("F#3", "8n", Tone.now() + 0.1);
+                button.classList.add('incorrect');
+                feedbackEl.innerHTML = `Wrong! Correct: ${q.answer.en}`;
+                feedbackEl.className = 'mt-2 text-center text-md font-medium text-red-600';
+                allButtons.forEach(btn => { if (btn.textContent.trim() === q.answer.en.trim()) btn.classList.add('correct'); });
+            }
+            quizState[currentPart].userAnswers[idx] = { isCorrect, answer: opt };
+            redoBtn.classList.remove('hidden');
+            updateScoreText(); updateQuestionButtonStyles(); updateButtonVisibility();
+        }
+
+        function showResults() {
+            [questionNavArea, questionArea, answerArea, nextBtn, prevBtn, redoBtn].forEach(el => el.classList.add('hidden'));
+            resultsArea.classList.remove('hidden');
+            resultsScoreEl.innerHTML = `Final score for Part ${currentPart}: ${quizState[currentPart].score} / ${quizData.length}`;
+            summaryEl.innerHTML = '<h3 class="text-xl font-bold text-center mb-4">Review:</h3>'; 
+            quizState[currentPart].userAnswers.forEach((ua, index) => {
+                if (!ua) return;
+                const d = quizData[index];
+                const div = document.createElement('div');
+                div.className = `mb-4 p-3 rounded-md ${ua.isCorrect ? 'bg-blue-100' : 'bg-red-100'}`;
+                div.innerHTML = `<p class="font-semibold">${d.number}. ${d.question.en}</p>
+                    <p class="text-sm mt-1">Your answer: ${ua.answer}</p>
+                    ${!ua.isCorrect ? `<p class="text-sm font-bold text-red-800 mt-1">Correct: ${d.answer.en}</p>` : ''}`;
+                summaryEl.appendChild(div);
+            });
+        }
+        
+        function redoQuestion() {
+            const idx = quizState[currentPart].currentQuestionIndex;
+            if (quizState[currentPart].userAnswers[idx]?.isCorrect) quizState[currentPart].score--;
+            quizState[currentPart].userAnswers[idx] = undefined;
+            updateScoreText(); showQuestion();
+        }
+
+        function redoPart() {
+            quizState[currentPart] = { userAnswers: [], score: 0, currentQuestionIndex: 0 };
+            loadQuizView();
+        }
+
+        // Listeners
+        [part1Btn, part2Btn, part3Btn, part4Btn, part5Btn, part6Btn, part7Btn].forEach((btn, i) => btn.addEventListener('click', () => switchPart(i+1)));
+        prevBtn.addEventListener('click', () => { if (quizState[currentPart].currentQuestionIndex > 0) { quizState[currentPart].currentQuestionIndex--; showQuestion(); } });
+        nextBtn.addEventListener('click', () => {
+            const idx = quizState[currentPart].currentQuestionIndex;
+            if (idx < quizData.length - 1) { quizState[currentPart].currentQuestionIndex++; showQuestion(); }
+            else showResults();
+        });
+        restartBtn.addEventListener('click', initializeQuiz);
+        redoBtn.addEventListener('click', redoQuestion);
+        redoPartBtn.addEventListener('click', redoPart);
+        
+        initializeQuiz();
+    </script>
+</body>
+</html>
